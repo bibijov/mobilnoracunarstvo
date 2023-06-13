@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Lane Kolor-Gradnja",
+    "slug": "laneKolorGradnja",
+    "version": "1.0.0",
+    "scheme": "acme",
+    "web": {
+      "bundler": "metro"
+    },
+    "android": {
+      "package": "rs.farbaralanekolor",
+      "versionCode": 1
+    },
+    "extra": {
+      "eas": {
+        "projectId": "157168fe-19c5-42bd-9cac-156a70b433c2"
+      }
+    }
+  }
+}
