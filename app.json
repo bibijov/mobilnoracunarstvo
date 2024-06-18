@@ -1,15 +1,17 @@
 {
   "expo": {
-    "name": "Lane Kolor-Gradnja",
+    "name": "Farbara Lane Kolor",
     "slug": "laneKolorGradnja",
-    "version": "1.0.0",
+    "version": "1.0.7",
+    "orientation": "portrait",
+    "icon":"./flkFinal.png",
     "scheme": "acme",
     "web": {
       "bundler": "metro"
     },
     "android": {
       "package": "rs.farbaralanekolor",
-      "versionCode": 1
+      "versionCode": 8
     },
     "extra": {
       "eas": {
