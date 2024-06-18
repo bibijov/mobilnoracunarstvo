@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   Text,
@@ -15,31 +15,62 @@ import { useKorpa } from "./index";
 import _ from "lodash";
 import ProductItem from "../components/productItem/ProductItem";
 import qs from "qs";
+import { db, upitiRef } from "../firebase";
+import {
+  updateDoc,
+  doc,
+  addDoc,
+  collection,
+  getDocs,
+  setDoc,
+} from "firebase/firestore";
+import { uniqueId } from "react-native-global-state-hooks";
 
 const korpa = () => {
   const [korpa, setKorpa] = useKorpa();
   const router = useRouter();
+
+  const [nizUpita, setNizupita] = useState([]);
+  useEffect(() => {
+    getDocs(upitiRef).then((res) => {
+      const upiti = res.docs.map((doc) => ({ ...doc.data() }));
+      console.log(upiti, "UPITI", uniqueId());
+      setNizupita(upiti);
+    });
+  }, []);
 
   async function posaljiPorudzbinu() {
     let url = `mailto:bibijovano@gmail.com`;
     const nizKorpa = korpa.map((item) => {
       return `${item.Ime} - Kolicina: ${item.Kolicina}`;
     });
+    // console.log(korpa)
+    const id = uniqueId();
+    // addDoc(upitiRef, id, {
+    //   korpa: nizKorpa,
+    //   id: id
+    // });
+    setDoc(doc(db, "upiti", id), {
+      korpa: nizKorpa,
+      id: id,
+    });
+    setKorpa([])
+
     const query = qs.stringify({
       subject: "Porudzbina sa aplikacije",
       body: `${nizKorpa}`,
     });
 
-    if (query.length) {
-      url += `?${query}`;
-    }
-    const canOpen = await Linking.canOpenURL(url);
+    // if (query.length) {
+    //   url += `?${query}`;
+    // }
+    // const canOpen = await Linking.canOpenURL(url);
 
-    if (!canOpen) {
-      throw new Error("Error prilikom slanja porudzbine");
-    }
+    // if (!canOpen) {
+    //   throw new Error("Error prilikom slanja porudzbine");
+    // }
 
-    return Linking.openURL(url);
+    // return Linking.openURL(url);
   }
   return (
     <SafeAreaView
@@ -92,6 +123,25 @@ const korpa = () => {
           <Text style={styles.textPoruci}>Pošaljite porudžbinu</Text>
         </TouchableOpacity>
       )}
+      <Text style={{
+        fontSize:30
+      }}>Upiti</Text>
+      {nizUpita.map((upit) => (
+        <View style={{
+          width: "100%",
+          borderColor: "blue",
+          borderTopWidth: "1px",
+          borderBottomWidth: "1px",
+          marginBottom: 5,
+          marginTop: 5
+        }}>
+          <Text>ID: {upit.id}</Text>
+          <Text>Proizvodi: {upit.korpa}</Text>
+          {/* {upit.korpa.map((korpait)=>{
+            <Text>{korpait}</Text>
+          })} */}
+        </View>
+      ))}
       <Navigation />
     </SafeAreaView>
   );
