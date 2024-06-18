@@ -23,6 +23,8 @@ import {
   collection,
   getDocs,
   setDoc,
+  removeDoc,
+  deleteDoc
 } from "firebase/firestore";
 import { uniqueId } from "react-native-global-state-hooks";
 
@@ -39,6 +41,14 @@ const korpa = () => {
     });
   }, []);
 
+  async function ukloniUpit(id){
+    deleteDoc(doc(db, "upiti", id));
+    getDocs(upitiRef).then((res) => {
+      const upiti = res.docs.map((doc) => ({ ...doc.data() }));
+      console.log(upiti, "UPITI", uniqueId());
+      setNizupita(upiti);
+    });
+  }
   async function posaljiPorudzbinu() {
     let url = `mailto:bibijovano@gmail.com`;
     const nizKorpa = korpa.map((item) => {
@@ -53,6 +63,7 @@ const korpa = () => {
     setDoc(doc(db, "upiti", id), {
       korpa: nizKorpa,
       id: id,
+      random: uniqueId()
     });
     setKorpa([])
 
@@ -137,9 +148,26 @@ const korpa = () => {
         }}>
           <Text>ID: {upit.id}</Text>
           <Text>Proizvodi: {upit.korpa}</Text>
+          <Text>Random: {uniqueId()}</Text>
           {/* {upit.korpa.map((korpait)=>{
             <Text>{korpait}</Text>
           })} */}
+          <TouchableOpacity onPress={()=>{}}>
+            <Text style={{
+              color:"blue",
+              fontSize: 15,
+              marginTop: 10,
+              
+            }}>Update random</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={()=>{ukloniUpit(upit.id)}}>
+            <Text style={{
+              color:"red",
+              fontSize: 15,
+              marginTop: 10,
+              
+            }}>Ukloni upit</Text>
+          </TouchableOpacity>
         </View>
       ))}
       <Navigation />
