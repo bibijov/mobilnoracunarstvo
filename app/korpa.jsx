@@ -24,7 +24,7 @@ import {
   getDocs,
   setDoc,
   removeDoc,
-  deleteDoc
+  deleteDoc,
 } from "firebase/firestore";
 import { uniqueId } from "react-native-global-state-hooks";
 
@@ -41,8 +41,18 @@ const korpa = () => {
     });
   }, []);
 
-  async function ukloniUpit(id){
+  async function ukloniUpit(id) {
     deleteDoc(doc(db, "upiti", id));
+    getDocs(upitiRef).then((res) => {
+      const upiti = res.docs.map((doc) => ({ ...doc.data() }));
+      console.log(upiti, "UPITI", uniqueId());
+      setNizupita(upiti);
+    });
+  }
+  async function updateRandom(id) {
+    updateDoc(doc(upitiRef, id), {
+      random: uniqueId(),
+    });
     getDocs(upitiRef).then((res) => {
       const upiti = res.docs.map((doc) => ({ ...doc.data() }));
       console.log(upiti, "UPITI", uniqueId());
@@ -63,9 +73,9 @@ const korpa = () => {
     setDoc(doc(db, "upiti", id), {
       korpa: nizKorpa,
       id: id,
-      random: uniqueId()
+      random: uniqueId(),
     });
-    setKorpa([])
+    setKorpa([]);
 
     const query = qs.stringify({
       subject: "Porudzbina sa aplikacije",
@@ -134,39 +144,59 @@ const korpa = () => {
           <Text style={styles.textPoruci}>Pošaljite porudžbinu</Text>
         </TouchableOpacity>
       )}
-      <Text style={{
-        fontSize:30
-      }}>Upiti</Text>
+      <Text
+        style={{
+          fontSize: 30,
+        }}
+      >
+        Upiti
+      </Text>
       {nizUpita.map((upit) => (
-        <View style={{
-          width: "100%",
-          borderColor: "blue",
-          borderTopWidth: "1px",
-          borderBottomWidth: "1px",
-          marginBottom: 5,
-          marginTop: 5
-        }}>
+        <View
+          style={{
+            width: "100%",
+            borderColor: "blue",
+            borderTopWidth: "1px",
+            borderBottomWidth: "1px",
+            marginBottom: 5,
+            marginTop: 5,
+          }}
+        >
           <Text>ID: {upit.id}</Text>
           <Text>Proizvodi: {upit.korpa}</Text>
-          <Text>Random: {uniqueId()}</Text>
+          <Text>Random: {upit.random}</Text>
           {/* {upit.korpa.map((korpait)=>{
             <Text>{korpait}</Text>
           })} */}
-          <TouchableOpacity onPress={()=>{}}>
-            <Text style={{
-              color:"blue",
-              fontSize: 15,
-              marginTop: 10,
-              
-            }}>Update random</Text>
+          <TouchableOpacity
+            onPress={() => {
+              updateRandom(upit.id);
+            }}
+          >
+            <Text
+              style={{
+                color: "blue",
+                fontSize: 15,
+                marginTop: 10,
+              }}
+            >
+              Update random
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={()=>{ukloniUpit(upit.id)}}>
-            <Text style={{
-              color:"red",
-              fontSize: 15,
-              marginTop: 10,
-              
-            }}>Ukloni upit</Text>
+          <TouchableOpacity
+            onPress={() => {
+              ukloniUpit(upit.id);
+            }}
+          >
+            <Text
+              style={{
+                color: "red",
+                fontSize: 15,
+                marginTop: 10,
+              }}
+            >
+              Ukloni upit
+            </Text>
           </TouchableOpacity>
         </View>
       ))}
