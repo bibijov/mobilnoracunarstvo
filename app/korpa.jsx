@@ -15,7 +15,8 @@ import { useKorpa } from "./index";
 import _ from "lodash";
 import ProductItem from "../components/productItem/ProductItem";
 import qs from "qs";
-import { db, upitiRef } from "../firebase";
+import { database, db, upitiRef } from "../firebase";
+import { child, get, getDatabase, push, ref, remove, set } from "firebase/database";
 import {
   updateDoc,
   doc,
@@ -34,49 +35,77 @@ const korpa = () => {
 
   const [nizUpita, setNizupita] = useState([]);
   useEffect(() => {
-    getDocs(upitiRef).then((res) => {
-      const upiti = res.docs.map((doc) => ({ ...doc.data() }));
-      console.log(upiti, "UPITI", uniqueId());
-      setNizupita(upiti);
-    });
+    get(ref(database, 'upiti')).then((snapshot)=>{
+      if(snapshot.exists()){
+        console.log("SNAPSHOT", Object.values(snapshot.val()));
+        const upiti = Object.values(snapshot.val());
+        setNizupita(upiti)
+      }else(console.log("Snapshot ne postoji."))
+    }).catch((error)=>{
+      console.log(error);
+    })
   }, []);
 
   async function ukloniUpit(id) {
     deleteDoc(doc(db, "upiti", id));
-    getDocs(upitiRef).then((res) => {
-      const upiti = res.docs.map((doc) => ({ ...doc.data() }));
-      console.log(upiti, "UPITI", uniqueId());
-      setNizupita(upiti);
-    });
+    remove(ref(database, `upiti/${id}`));
+    get(ref(database, 'upiti')).then((snapshot)=>{
+      if(snapshot.exists()){
+        console.log("SNAPSHOT", Object.values(snapshot.val()));
+        const upiti = Object.values(snapshot.val());
+        setNizupita(upiti)
+      }else(console.log("Snapshot ne postoji."))
+    }).catch((error)=>{
+      console.log(error);
+    })
   }
   async function updateRandom(id) {
     updateDoc(doc(upitiRef, id), {
       random: uniqueId(),
     });
-    getDocs(upitiRef).then((res) => {
-      const upiti = res.docs.map((doc) => ({ ...doc.data() }));
-      console.log(upiti, "UPITI", uniqueId());
-      setNizupita(upiti);
-    });
+    // getDocs(upitiRef).then((res) => {
+    //   const upiti = res.docs.map((doc) => ({ ...doc.data() }));
+    //   // console.log(upiti, "UPITI", uniqueId());
+    //   setNizupita(upiti);
+    // });
+    get(ref(database, `upiti/${id}`)).then((snapshot)=>{
+      const newData = {
+        id: snapshot.val().id,
+        korpa: snapshot.val().korpa,
+        random: snapshot.val().random
+      }
+      console.log(newData)
+      remove(ref(database, `upiti/${id}`));
+      set(ref(database,'upiti/' + id),newData)
+    })
   }
   async function posaljiPorudzbinu() {
     let url = `mailto:bibijovano@gmail.com`;
     const nizKorpa = korpa.map((item) => {
       return `${item.Ime} - Kolicina: ${item.Kolicina}`;
     });
-    // console.log(korpa)
     const id = uniqueId();
-    // addDoc(upitiRef, id, {
+    // setDoc(doc(db, "upiti", id), {
     //   korpa: nizKorpa,
-    //   id: id
+    //   id: id,
+    //   random: uniqueId(),
     // });
-    setDoc(doc(db, "upiti", id), {
+    
+    set(ref(database,'upiti/' + id),{
       korpa: nizKorpa,
       id: id,
-      random: uniqueId(),
-    });
+      random: uniqueId()
+    })
     setKorpa([]);
-
+    get(ref(database, 'upiti')).then((snapshot)=>{
+      if(snapshot.exists()){
+        console.log("SNAPSHOT", Object.values(snapshot.val()));
+        const upiti = Object.values(snapshot.val());
+        setNizupita(upiti)
+      }else(console.log("Snapshot ne postoji."))
+    }).catch((error)=>{
+      console.log(error);
+    })
     const query = qs.stringify({
       subject: "Porudzbina sa aplikacije",
       body: `${nizKorpa}`,
