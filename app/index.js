@@ -89,11 +89,11 @@ const Home = () => {
           >
             <TouchableOpacity
               style={[styles.touchable, styles.touchableBA]}
-              onPress={() => router.push("/galerija")}
+              onPress={() => router.push("/login")}
             >
               <View style={styles.touchableView}>
                 <Entypo name="image" size={45} color="#ea5200" />
-                <Text style={styles.touchableText}>Galerija</Text>
+                <Text style={styles.touchableText}>Login</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity

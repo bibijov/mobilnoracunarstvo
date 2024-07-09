@@ -28,11 +28,14 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { uniqueId } from "react-native-global-state-hooks";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const korpa = () => {
   const [korpa, setKorpa] = useKorpa();
   const router = useRouter();
-
+  const [currentUser, setCurrentUser] = useState();
+  const [currentUserData, setCurrentUserData] = useState();
+  const auth = getAuth();
   const [nizUpita, setNizupita] = useState([]);
   useEffect(() => {
     get(ref(database, 'upiti')).then((snapshot)=>{
@@ -44,7 +47,28 @@ const korpa = () => {
     }).catch((error)=>{
       console.log(error);
     })
+
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        let currentUser = user;
+        setCurrentUser(currentUser);
+        console.log("POSTAVLJEN CURRENT USER", currentUser);
+      } else {
+        setCurrentUser(null);
+      }
+    });
   }, []);
+
+  useEffect(()=>{
+    if(currentUser===null || currentUser===undefined) return;
+
+    get(ref(database,`korisnici/${currentUser.uid}`)).then((snapshot)=>{
+      console.log(snapshot.val(), "KORISNIK")
+      setCurrentUserData(snapshot.val());
+        })
+
+  },[currentUser])
 
   async function ukloniUpit(id) {
     deleteDoc(doc(db, "upiti", id));
@@ -72,7 +96,7 @@ const korpa = () => {
       const newData = {
         id: snapshot.val().id,
         korpa: snapshot.val().korpa,
-        random: snapshot.val().random
+        random: snapshot.val().random==="Cekanje" ? "Poslat" : "Cekanje"
       }
       console.log(newData)
       remove(ref(database, `upiti/${id}`));
@@ -94,7 +118,7 @@ const korpa = () => {
     set(ref(database,'upiti/' + id),{
       korpa: nizKorpa,
       id: id,
-      random: uniqueId()
+      random: "Cekanje"
     })
     setKorpa([]);
     get(ref(database, 'upiti')).then((snapshot)=>{
@@ -193,11 +217,11 @@ const korpa = () => {
         >
           <Text>ID: {upit.id}</Text>
           <Text>Proizvodi: {upit.korpa}</Text>
-          <Text>Random: {upit.random}</Text>
+          <Text>Stanje: {upit.random}</Text>
           {/* {upit.korpa.map((korpait)=>{
             <Text>{korpait}</Text>
           })} */}
-          <TouchableOpacity
+          {currentUserData!==undefined && currentUserData!==null && currentUserData.uloga==="admin" && <TouchableOpacity
             onPress={() => {
               updateRandom(upit.id);
             }}
@@ -209,10 +233,10 @@ const korpa = () => {
                 marginTop: 10,
               }}
             >
-              Update random
+              Update stanje
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </TouchableOpacity>}
+          {currentUserData!==undefined && currentUserData!==null && currentUserData.uloga==="admin" && <TouchableOpacity
             onPress={() => {
               ukloniUpit(upit.id);
             }}
@@ -226,7 +250,7 @@ const korpa = () => {
             >
               Ukloni upit
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> }
         </View>
       ))}
       <Navigation />

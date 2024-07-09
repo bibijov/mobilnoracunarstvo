@@ -49,7 +49,7 @@ const Navigation = () => {
       <TouchableOpacity
         style={[styles.navigationSection, styles.navNotLast]}
         onPress={() => {
-          router.push("/galerija");
+          router.push("/login");
         }}
       >
         <Entypo name="image" size={30} color="#ea5200" />
